@@ -73,7 +73,12 @@ A copy pública de apresentação, navegação e estados vazios segue princípio
 
 ## Recuperação de senha do painel
 
-O site pode ser testado no Preview, sem publicação nem domínio próprio. A rota reservada `/atelier-7e4c19b2` permite pedir um link de recuperação e escolher uma nova senha após abrir esse link. Para testar, inclua o endereço completo do Preview, terminando em `/atelier-7e4c19b2?recovery=1`, na lista **Authentication > URL Configuration > Redirect URLs**. Quando o site for publicado, adicione também o endereço de produção.
+O formulário **Esqueci minha senha** do próprio painel envia o callback `/atelier-7e4c19b2?recovery=1`, derivado da origem que está aberta no navegador. No Supabase, abra **Authentication > URL Configuration** e configure:
+
+- **Site URL**: `https://3000-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer` (somente a origem do Preview, sem `localhost` e sem a rota do painel).
+- **Redirect URLs**: `https://3000-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer/atelier-7e4c19b2?recovery=1`.
+
+Salve, abra o painel pelo link do Preview deste projeto (não por `localhost`), solicite um **novo** email pelo formulário do painel e use esse email. Links enviados antes da correção podem continuar apontando para o destino antigo. Se o endereço do Preview mudar, atualize as duas entradas com a origem atual. Um envio manual pelo Dashboard do Supabase não passa pelo `redirectTo` deste formulário e pode usar apenas a `Site URL`. Quando o site for publicado, substitua a **Site URL** pela origem de produção e inclua também o callback de produção em **Redirect URLs**. Se você personalizou o template de email para montar o link diretamente, use `{{ .RedirectTo }}` como destino dinâmico, em vez de fixar `{{ .SiteURL }}`.
 
 O provedor de email padrão do Supabase Auth tem limite de 2 emails de autenticação por hora. Se aparecer `email rate limit exceeded`, pare de repetir o pedido e aguarde a renovação do limite; não é necessário domínio próprio para usar o provedor padrão. O domínio que o Resend exige para um remetente verificado é separado do domínio do site. Só será necessário configurar SMTP próprio se quiser usar o Resend para os emails de Auth. Nesse caso, verifique um domínio no Resend e configure no Supabase em **Authentication > Email > SMTP Settings**: host `smtp.resend.com`, porta `465`, usuário `resend` e a chave API do Resend como senha SMTP. Informe também um remetente desse domínio verificado. A configuração personalizada cobre emails de recuperação e outros emails de Auth. O limite inicial documentado após configurar SMTP é de 30 emails por hora e pode ser ajustado em **Authentication > Rate Limits**. Nunca envie a chave por chat.
 
