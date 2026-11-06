@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, ArrowUpRight, BookOpen, Feather, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { SiteLayout } from "@/components/SiteLayout";
@@ -12,13 +14,18 @@ const shortcuts = [
 ];
 
 export default function Home() {
+  const heroRef = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const sheetY = useTransform(scrollYProgress, [0, 1], [0, 18]);
+  const stampY = useTransform(scrollYProgress, [0, 1], [0, -12]);
   const { data: profile } = useQuery({ queryKey: ["artist-profile"], queryFn: loadArtistProfile });
   const artistName = profile?.artist_name || "Khaleesi Saithe";
   const bio = profile?.bio?.trim();
 
   return (
     <SiteLayout>
-      <section className="home-hero">
+      <section ref={heroRef} className="home-hero">
         <div className="home-hero-copy reveal">
           <div className="eyebrow">Caderno aberto · tattoo autoral</div>
           <h1 className="hero-title"><span>Desenhos</span><span>que vivem</span><span><em>na pele.</em></span></h1>
@@ -29,19 +36,19 @@ export default function Home() {
           </div>
           <div className="hero-meta">Desenho autoral · horário confirmado após aprovação</div>
         </div>
-        <div className="hero-sheet-wrap" aria-label="Composição tipográfica decorativa inspirada em um caderno de desenho">
+        <motion.div className="hero-sheet-wrap" style={reduceMotion ? undefined : { y: sheetY }} aria-label="Composição tipográfica decorativa inspirada em um caderno de desenho">
           <span className="hero-side-note">anotações à margem</span>
           <div className="hero-sheet">
             <div className="sheet-label"><span>Sketchbook / caderno aberto</span><span className="sheet-number">Nº 01</span></div>
-            <div className="sheet-sketch">
+            <div className="sheet-sketch reveal">
               <div className="sketch-orbit"><span className="sketch-mark" aria-hidden="true">✳</span></div>
               <span className="pencil-scribble" aria-hidden="true" />
             </div>
             <div className="sheet-label"><span>Khaleesi Saithe</span><span>{profile?.location?.trim() || "Local não informado"}</span></div>
             <span className="sheet-note">{bio || "A apresentação da artista será adicionada quando ela fornecer as informações."}</span>
           </div>
-          <div className="hero-stamp">traço<br />autoral<br />✦</div>
-        </div>
+          <motion.div className="hero-stamp" style={reduceMotion ? undefined : { y: stampY, rotate: 11 }}>traço<br />autoral<br />✦</motion.div>
+        </motion.div>
         <a className="scroll-cue" href="#caderno" aria-label="Rolar até o conteúdo"><ArrowDown size={16} /><span>Continue folheando</span></a>
       </section>
 

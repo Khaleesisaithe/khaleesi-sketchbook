@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase";
+import { ARTIST_ROUTE } from "@/lib/privateRoute";
 
 type UseAuthOptions = { redirectOnUnauthenticated?: boolean; redirectPath?: string };
 
@@ -16,7 +17,7 @@ export function useAuth(options?: UseAuthOptions) {
 
   useEffect(() => {
     if (!redirectOnUnauthenticated || meQuery.isLoading || user || typeof window === "undefined") return;
-    const target = redirectPath || "/admin";
+    const target = redirectPath || ARTIST_ROUTE;
     if (window.location.pathname !== target) window.location.assign(target);
   }, [redirectOnUnauthenticated, redirectPath, meQuery.isLoading, user]);
 

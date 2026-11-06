@@ -1,2 +1,2 @@
 User-agent: *
-Disallow: /atelier-7e4c19b2
+# Não bloqueie o rastreamento da rota reservada: o servidor envia X-Robots-Tag noindex.

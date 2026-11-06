@@ -7,6 +7,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerUploadRoutes } from "../uploads";
+import { ARTIST_ROUTE } from "../../client/src/lib/privateRoute";
 
 function contentSecurityPolicy() {
   let supabaseOrigin = "";
@@ -37,7 +38,10 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   app.disable("x-powered-by");
-  app.use((_req, res, next) => {
+  app.use((req, res, next) => {
+    if (req.path.replace(/\/+$/, "") === ARTIST_ROUTE) {
+      res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+    }
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");

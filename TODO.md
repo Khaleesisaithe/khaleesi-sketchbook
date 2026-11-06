@@ -1,98 +1,98 @@
 # TODO — Portfólio de tatuagem | Sketchbook digital
 
 ## 1. Identidade visual, layout e navegação
-- [ ] Desenvolva um site responsivo, funcional e profissional para meu portfólio de tatuagens. O conceito é um *sketchbook digital interativo*, com estética gótica, artística e autoral.
-- [ ] O site deve parecer um caderno de desenhos físico, com:
-  - Textura de papel e páginas de sketchbook.
-  - Tipografias góticas baseadas nas referências do manual enviado.
-  - Ilustrações, rabiscos, anotações e símbolos desenhados à mão.
-  - Elementos animados, desenhos que aparecem progressivamente, efeitos parallax e transições de páginas.
-  - Composição orgânica e assimétrica.
-- [ ] Utilize o manual de cuidados enviado para extrair a paleta de cores, tipografia e identidade gráfica. As referências visuais devem orientar todo o design. Evite templates genéricos.
-- [ ] Instrução atual: não gerar nem criar imagens agora; usar tipografia e linhas/rabiscos feitos em CSS. Deixar espaços identificados para fotografias reais que serão fornecidas depois.
-- [ ] Home: capa interativa, apresentação artística e atalhos de navegação.
+- [x] Desenvolva um site responsivo, funcional e profissional para meu portfólio de tatuagens. O conceito é um *sketchbook digital interativo*, com estética gótica, artística e autoral.
+- [x] O site deve parecer um caderno de desenhos físico, com:
+  - [x] Textura de papel e páginas de sketchbook.
+  - [x] Tipografias góticas baseadas nas referências do manual enviado.
+  - [x] Ilustrações, rabiscos, anotações e símbolos desenhados à mão.
+  - [x] Elementos animados, desenhos que aparecem progressivamente, efeitos parallax e transições de páginas.
+  - [x] Composição orgânica e assimétrica.
+- [x] Utilize o manual de cuidados enviado para extrair a paleta de cores, tipografia e identidade gráfica. As referências visuais devem orientar todo o design. Evite templates genéricos.
+- [x] Instrução atual: não gerar nem criar imagens agora; usar tipografia e linhas/rabiscos feitos em CSS. Deixar espaços identificados para fotografias reais que serão fornecidas depois.
+- [x] Home: capa interativa, apresentação artística e atalhos de navegação.
 
 ## 2. Portfólio e catálogos
-- [ ] Portfólio: galeria de tatuagens com categorias e visualização ampliada.
-- [ ] Flashes: desenhos disponíveis, tamanhos, preços e status.
-- [ ] Artes disponíveis: desenhos autorais com valores e dimensões sugeridas.
-- [ ] Utilizar placeholders identificados para os dados que fornecerei posteriormente; não inventar tatuagens, preços, medidas, disponibilidade ou biografia.
+- [x] Portfólio: galeria de tatuagens com categorias e visualização ampliada.
+- [x] Flashes: desenhos disponíveis, tamanhos, preços e status.
+- [x] Artes disponíveis: desenhos autorais com valores e dimensões sugeridas.
+- [x] Utilizar placeholders identificados para os dados que fornecerei posteriormente; não inventar tatuagens, preços, medidas, disponibilidade ou biografia.
 
 ## 3. Inspirações, redes e contato
-- [ ] Inspirações: integração com Pinterest ou incorporação de painéis.
-- [ ] Instagram: acesso ao perfil e possibilidade de exibir publicações.
-- [ ] WhatsApp: contato direto com mensagem pré-preenchida.
-- [ ] Usar placeholders identificados até que sejam fornecidos os links/perfil/telefone reais; não inventar informações de contato.
+- [x] Inspirações: integração com Pinterest ou incorporação de painéis.
+- [x] Instagram: acesso ao perfil e possibilidade de exibir publicações.
+- [x] WhatsApp: contato direto com mensagem pré-preenchida.
+- [x] Usar placeholders identificados até que sejam fornecidos os links/perfil/telefone reais; não inventar informações de contato.
 
 ## 4. Manual de cuidados
-- [ ] Cuidados: reconstrução completa do manual enviado, preservando todas as informações e suas respectivas seções.
-- [ ] Preservar o conteúdo de **Antes da sessão**, **Durante a sessão**, **Pós tattoo**, **Alimentos e tattoo** e **Condições para retoques**, sem eliminar itens do manual ou criar recomendações clínicas novas.
-- [ ] Antes da sessão: manter higiene da pele, descanso, alimentação e água, hidratação e orientações de dor/desconforto, incluindo todos os detalhes e intervalos descritos no PDF.
-- [ ] Durante a sessão: manter as instruções sobre acompanhantes, estado emocional e agendamento, além de qualquer outra informação da seção.
-- [ ] Pós tattoo: manter cuidados das primeiras horas, higiene, secagem, pomada, evitar tocar/coçar, cicatrização, exposição a sol/praia/piscina, sinais de atenção, alimentação e hidratação recomendadas e a evitar, e todo o restante da seção.
-- [ ] Condições para retoques: manter literalmente as condições e informações de contato/agendamento/cobrança que constam nessa seção do manual, sem acrescentar condições ausentes.
+- [x] Cuidados: reconstrução completa do manual enviado, preservando todas as informações e suas respectivas seções.
+- [x] Preservar o conteúdo de **Antes da sessão**, **Durante a sessão**, **Pós tattoo**, **Alimentos e tattoo** e **Condições para retoques**, sem eliminar itens do manual ou criar recomendações clínicas novas.
+- [x] Antes da sessão: manter higiene da pele, descanso, alimentação e água, hidratação e orientações de dor/desconforto, incluindo todos os detalhes e intervalos descritos no PDF.
+- [x] Durante a sessão: manter as instruções sobre acompanhantes, estado emocional e agendamento, além de qualquer outra informação da seção.
+- [x] Pós tattoo: manter cuidados das primeiras horas, higiene, secagem, pomada, evitar tocar/coçar, cicatrização, exposição a sol/praia/piscina, sinais de atenção, alimentação e hidratação recomendadas e a evitar, e todo o restante da seção.
+- [x] Condições para retoques: manter literalmente as condições e informações de contato/agendamento/cobrança que constam nessa seção do manual, sem acrescentar condições ausentes.
 
 ## 5. Agendamento e disponibilidade
-- [ ] Criar formulário com nome, e-mail, WhatsApp, tatuagem desejada, local do corpo, tamanho, referências, data e horário.
-- [ ] O sistema deve:
-  1. Consultar os horários disponíveis.
-  2. Impedir reservas duplicadas.
-  3. Registrar solicitações como pendentes.
-  4. Notificar-me por e-mail.
-  5. Permitir aprovação ou recusa pelo painel administrativo.
-  6. Enviar automaticamente a resposta ao cliente.
-  7. Permitir cancelamentos, reagendamentos e bloqueio de horários.
-- [ ] A confirmação deve depender exclusivamente da minha aprovação.
-- [ ] Não exibir ao público dados pessoais de outros clientes; horários pendentes ou aprovados não podem aceitar uma solicitação duplicada.
-- [ ] Bloqueios manuais não podem se sobrepor a pedidos pendentes/aprovados; a inserção de bloqueios, aprovação e reagendamento devem verificar a disponibilidade também sob requisições simultâneas.
+- [x] Criar formulário com nome, e-mail, WhatsApp, tatuagem desejada, local do corpo, tamanho, referências, data e horário.
+- [x] O sistema deve:
+  - [x] Consultar os horários disponíveis.
+  - [x] Impedir reservas duplicadas.
+  - [x] Registrar solicitações como pendentes.
+  - [ ] Notificar-me por e-mail.
+  - [x] Permitir aprovação ou recusa pelo painel administrativo.
+  - [ ] Enviar automaticamente a resposta ao cliente.
+  - [x] Permitir cancelamentos, reagendamentos e bloqueio de horários.
+- [x] A confirmação deve depender exclusivamente da minha aprovação.
+- [x] Não exibir ao público dados pessoais de outros clientes; horários pendentes ou aprovados não podem aceitar uma solicitação duplicada.
+- [x] Bloqueios manuais não podem se sobrepor a pedidos pendentes/aprovados; a inserção de bloqueios, aprovação e reagendamento devem verificar a disponibilidade também sob requisições simultâneas.
 
 ## 6. Painel administrativo
-- [ ] Criar painel protegido para administrar:
-  - Portfólio e fotografias.
-  - Flashes, preços e disponibilidade.
-  - Artes autorais.
-  - Agendamentos e calendário.
-  - Horários de atendimento.
-  - Integrações e informações de contato.
-- [ ] Todas as alterações devem refletir automaticamente no site.
+- [x] Criar painel protegido para administrar:
+  - [x] Portfólio e fotografias.
+  - [x] Flashes, preços e disponibilidade.
+  - [x] Artes autorais.
+  - [x] Agendamentos e calendário.
+  - [x] Horários de atendimento.
+  - [x] Integrações e informações de contato.
+- [x] Todas as alterações devem refletir automaticamente no site.
 - [x] Na tela de acesso, a conta autorizada pode solicitar recuperação de senha por email; a resposta não revela se o endereço existe. O link retorna à rota autorizada do painel, a pessoa define uma nova senha apenas com uma sessão de recuperação válida e limites de envio do Supabase são mostrados sem tentativas automáticas repetidas.
 
 ## 7. Segurança cibernética e LGPD
-- [ ] Segurança deve ser requisito de arquitetura, não um acabamento posterior.
+- [x] Segurança deve ser requisito de arquitetura, não um acabamento posterior.
 - [ ] Implementar:
-  - Autenticação segura e controle de acesso por função.
-  - Proteção de rotas administrativas.
-  - Autorização no servidor e políticas RLS no banco de dados.
-  - Validação e sanitização de entradas no front-end e back-end.
-  - Proteção contra SQL Injection, XSS, CSRF e abuso de formulários.
-  - Rate limiting e proteção contra tentativas automatizadas de acesso.
-  - Upload seguro, com validação de formato, tamanho e conteúdo dos arquivos.
-  - Segregação de dados dos clientes e armazenamento seguro.
-  - HTTPS, gestão de segredos e variáveis de ambiente.
-  - Backups e estratégia de recuperação.
-  - Logs de auditoria para operações administrativas.
-  - Consentimento e tratamento adequado de dados conforme a LGPD.
-  - Política de privacidade e mecanismo para solicitação de exclusão de dados.
-- [ ] Nunca expor senhas, tokens, chaves privadas ou credenciais no código público. Não confiar exclusivamente em validações feitas pelo navegador.
+  - [x] Autenticação segura e controle de acesso por função.
+  - [x] Proteção de rotas administrativas.
+  - [x] Autorização no servidor e políticas RLS no banco de dados.
+  - [x] Validação e sanitização de entradas no front-end e back-end.
+  - [x] Proteção contra SQL Injection, XSS, CSRF e abuso de formulários.
+  - [x] Rate limiting e proteção contra tentativas automatizadas de acesso.
+  - [x] Upload seguro, com validação de formato, tamanho e conteúdo dos arquivos.
+  - [x] Segregação de dados dos clientes e armazenamento seguro.
+  - [x] HTTPS, gestão de segredos e variáveis de ambiente.
+  - [ ] Backups e estratégia de recuperação.
+  - [x] Logs de auditoria para operações administrativas.
+  - [x] Consentimento e tratamento adequado de dados conforme a LGPD.
+  - [x] Política de privacidade e mecanismo para solicitação de exclusão de dados.
+- [x] Nunca expor senhas, tokens, chaves privadas ou credenciais no código público. Não confiar exclusivamente em validações feitas pelo navegador.
 
 ## 8. Tecnologia e integrações
-- [ ] Preferencialmente:
-  - Next.js ou React.
-  - TypeScript.
-  - Tailwind CSS.
-  - Supabase para banco, autenticação e armazenamento.
-  - Serviço de e-mail transacional.
-- [ ] Escolher arquitetura segura, escalável e de baixo custo operacional.
+- [x] Preferencialmente:
+  - [x] Next.js ou React.
+  - [x] TypeScript.
+  - [x] Tailwind CSS.
+  - [x] Supabase para banco, autenticação e armazenamento.
+  - [x] Serviço de e-mail transacional.
+- [x] Escolher arquitetura segura, escalável e de baixo custo operacional.
 - [x] Conectar Supabase PostgreSQL/Auth/Storage para cumprir RLS. Manter a base MySQL Manus provisionada sem uso pela aplicação; não executar migrações ou testes nela.
 - [ ] Implementar email transacional pelo provedor escolhido no plano. Não afirmar que notificações reais funcionam antes de configurar chave, remetente e domínio válidos.
-- [ ] Guardar credenciais em entrada protegida/variáveis de ambiente; não pedir nem registrar segredos no chat, fonte, Git ou logs.
+- [x] Guardar credenciais em entrada protegida/variáveis de ambiente; não pedir nem registrar segredos no chat, fonte, Git ou logs.
 
 ## 9. Responsividade, desempenho e entrega
-- [ ] O site deve funcionar perfeitamente em celulares, tablets e computadores. Priorizar imagens otimizadas, carregamento rápido, acessibilidade e animações leves.
+- [x] O site deve funcionar perfeitamente em celulares, tablets e computadores. Priorizar imagens otimizadas, carregamento rápido, acessibilidade e animações leves.
 - [ ] Não entregar apenas um protótipo visual. Implementar funcionalidades reais, testar formulários, permissões, agendamentos, notificações e integrações.
-- [ ] Utilizar placeholders identificados para dados que fornecerei posteriormente.
-- [ ] Antes de finalizar, analisar todos os arquivos de referência enviados. Não descartar informações do manual de cuidados nem inventar conteúdos.
-- [ ] Objetivo final: criar um sketchbook digital autoral, gótico e interativo, que funcione como portfólio, catálogo de tatuagens e plataforma profissional de atendimento e agendamento.
+- [x] Utilizar placeholders identificados para dados que fornecerei posteriormente.
+- [x] Antes de finalizar, analisar todos os arquivos de referência enviados. Não descartar informações do manual de cuidados nem inventar conteúdos.
+- [x] Objetivo final: criar um sketchbook digital autoral, gótico e interativo, que funcione como portfólio, catálogo de tatuagens e plataforma profissional de atendimento e agendamento.
 
 
 ## 10. Revisão editorial solicitada
@@ -108,11 +108,12 @@
 - [x] Aumentar moderadamente o tamanho e a legibilidade das letras no site público, incluir movimento de troca de página ao navegar e respeitar a preferência por movimento reduzido.
 - [x] Diferenciar o painel da artista: tipografia de interface distinta, estrutura intuitiva/profissional, visual administrativo separado do sketchbook público.
 - [x] Na Home, deixar espaço para informações adicionais sobre a artista sem inventá-las; preencher apenas os dados reais que ela fornecer.
-- [ ] Incluir, quando cadastrados, ícones e links para Instagram, YouTube e o portfólio externo da artista, sem inventar @, canais ou endereços.
-- [ ] Permitir exibir publicações públicas de Instagram, escolher e destacar uma delas e não carregar embeds de terceiros antes do consentimento do visitante. Não fazer scraping nem prometer sincronização automática sem a conta profissional, permissões e credenciais Meta necessárias.
-- [ ] Exibir o painel público do Pinterest indicado pela artista por meio do widget oficial e carregá-lo apenas após a escolha do visitante.
+- [x] Incluir, quando cadastrados, ícones e links para Instagram, YouTube e o portfólio externo da artista, sem inventar @, canais ou endereços.
+- [x] Permitir exibir publicações públicas de Instagram, escolher e destacar uma delas e não carregar embeds de terceiros antes do consentimento do visitante. Não fazer scraping nem prometer sincronização automática sem a conta profissional, permissões e credenciais Meta necessárias.
+- [x] Exibir o painel público do Pinterest indicado pela artista por meio do widget oficial e carregá-lo apenas após a escolha do visitante.
 - [ ] Pendências de conteúdo: texto/bio da artista, @/URL real do Instagram, URLs dos posts a exibir ou decisão de integração automática, URL do YouTube, URL do portfólio externo e URL pública da pasta/board do Pinterest.
 
 ## 12. Ativação das integrações sociais
 - [ ] Aplicar a migração aditiva `supabase/migrations/20261106010000_extend_social_profile.sql` no projeto Supabase da aplicação antes de gravar os novos campos de YouTube, portfólio externo e posts do Instagram.
+- [ ] Aplicar `supabase/migrations/20261106020000_guard_weekly_hours_overlap.sql` no Supabase de desenvolvimento antes de cadastrar horários reais, para que a constraint do banco também bloqueie sobreposições concorrentes.
 - [ ] Depois de receber os endereços reais da artista, preencher e publicar os links, posts de Instagram e painel público do Pinterest; nenhum endereço de perfil ou publicação foi inventado.

@@ -28,7 +28,7 @@ export const careGuide = [
     titulo: "3. Alimente-se e beba água",
     subtitulo: "Antes da Sessão",
     paragrafos: [
-      "Não é recomendado fazer uma tatuagem em jejum. Alimente-se adequadamente antes da sessão e leve uma garrafa de água para se manter hidratado(a). Em tatuagens mais longas, que duram várias horas, é importante levar um lanche para consumir durante os intervalos..",
+      "Não é recomendado fazer uma tatuagem em jejum. Alimente-se adequadamente antes da sessão e leve uma garrafa de água para se manter hidratado(a). Em tatuagens mais longas, que duram várias horas, é importante levar um lanche para consumir durante os intervalos.",
     ],
     listas: [],
   },
@@ -66,7 +66,7 @@ export const careGuide = [
     titulo: "1. Acompanhantes",
     subtitulo: "Durante a Sessão",
     paragrafos: [
-      "De acordo com as normas da Vigilância Sanitária, é permitida apenas a presença do tatuador e do cliente na sala de procedimentos. Além disso, a presença de terceiros pode interferir negativamente no andamento da sessão, gerando distrações, estresse ou insegurança. caso precise, leve apenas 1 acompanhante e comunique a tatuadors",
+      "De acordo com as normas da Vigilância Sanitária, é permitida apenas a presença do tatuador e do cliente na sala de procedimentos. Além disso, a presença de terceiros pode interferir negativamente no andamento da sessão, gerando distrações, estresse ou insegurança. Caso precise, leve apenas 1 acompanhante e comunique a tatuadora.",
     ],
     listas: [],
   },

@@ -4,7 +4,7 @@ Portfólio digital e painel de administração em React, TypeScript, Tailwind, E
 
 ## Estado operacional
 
-O código da aplicação, a migration Supabase e os testes de políticas estão no projeto. A artista confirmou que aplicou a migration ao Supabase de desenvolvimento e enviou as credenciais Supabase pela entrada protegida. A base MySQL Manus habilitada durante a inicialização não é usada nem modificada por esta aplicação. O painel exige uma conta Supabase Auth verificada e autorizada; antes de abrir o site ao público, confirme também o Resend, o remetente verificado, o perfil e os horários da artista.
+O código da aplicação, a migration base Supabase e os testes de políticas estão no projeto. A artista informou que aplicou `supabase/migrations/20261104000000_create_sketchbook.sql` ao Supabase usado para desenvolvimento; isso não foi verificado diretamente nesta sessão. A migration social `supabase/migrations/20261106010000_extend_social_profile.sql` ainda precisa ser confirmada/aplicada. A base MySQL Manus habilitada durante a inicialização não é usada nem modificada por esta aplicação. O painel exige uma conta Supabase Auth verificada e autorizada; antes de abrir o site ao público, confirme também o Resend, o remetente verificado, o perfil e os horários da artista.
 
 ## Requisitos e desenvolvimento
 
@@ -21,9 +21,11 @@ O servidor fornece `/api/health` e, em runtime, apenas valores públicos em `/ap
 
 1. Crie um projeto Supabase separado para desenvolvimento/testes e outro para produção; não aplique migrations de teste em um banco de produção.
 2. No projeto de desenvolvimento, execute `supabase/migrations/20261104000000_create_sketchbook.sql` pelo SQL Editor ou ferramenta de migrations. Confirme que concluiu sem erro antes de criar usuários ou enviar dados reais.
-3. Crie um usuário administrativo verificado em Supabase Auth. O email precisa corresponder a `ADMIN_ALLOWED_EMAIL`; o servidor registra esse usuário na tabela `admin_users` após validar o token e o email. Não habilite cadastro aberto para visitantes.
-4. Configure as chaves pelo mecanismo protegido de Secrets do projeto: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e `ADMIN_ALLOWED_EMAIL`. A URL e a chave publicável anon podem ser visíveis ao navegador, mas a service-role é privada e só existe no servidor.
-5. Configure as URLs autorizadas de retorno de Auth para o domínio de Preview e o domínio publicado. Nunca use uma chave service-role no browser.
+3. Execute `supabase/migrations/20261106020000_guard_weekly_hours_overlap.sql`. Ela adiciona uma constraint GiST que impede intervalos semanais habilitados que se sobreponham, inclusive em gravações concorrentes. Se o preflight apontar sobreposição já existente, revise os horários manualmente; a migration não apaga nem altera linhas.
+4. Para os novos campos sociais, execute também `supabase/migrations/20261106010000_extend_social_profile.sql` antes de salvá-los no painel.
+5. Crie um usuário administrativo verificado em Supabase Auth. O email precisa corresponder a `ADMIN_ALLOWED_EMAIL`; o servidor registra esse usuário na tabela `admin_users` após validar o token e o email. Não habilite cadastro aberto para visitantes.
+6. Configure as chaves pelo mecanismo protegido de Secrets do projeto: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e `ADMIN_ALLOWED_EMAIL`. A URL e a chave publicável anon podem ser visíveis ao navegador, mas a service-role é privada e só existe no servidor.
+7. Configure as URLs autorizadas de retorno de Auth para o domínio de Preview e o domínio publicado. Nunca use uma chave service-role no browser.
 
 Para revogar acesso, remova a conta correspondente de `public.admin_users` no projeto Supabase. Alterar `ADMIN_ALLOWED_EMAIL` bloqueia as rotas do servidor para o email antigo, mas não apaga por si só a linha que as políticas RLS consultam.
 
@@ -53,13 +55,15 @@ Não há backup externo configurado por este repositório. Defina backups autom�
 
 A autenticação do painel usa Supabase Auth com Bearer token; não há cookie de sessão do aplicativo. As mutations administrativas verificam a sessão no servidor e as tabelas/Storage também têm RLS. Pedidos públicos são submetidos por RPCs com validação no servidor/PostgreSQL, consentimento, honeypot, limites por email e limites globais. Isso reduz abuso, mas não substitui um serviço especializado de mitigação de DDoS nem uma avaliação jurídica da política LGPD.
 
-O email precisa permanecer em `ADMIN_ALLOWED_EMAIL` em toda autorização; a variável também controla o provisionamento da tabela de papéis. No PostgreSQL, triggers serializados recusam sobreposição entre pedidos ativos e bloqueios manuais, e os contadores globais de formulários também usam travas transacionais. A migration já foi aplicada ao projeto de desenvolvimento, então essas regras estão ativas ali. Aplique a mesma migration ao projeto de produção antes de publicar.
+A rota administrativa envia `X-Robots-Tag: noindex, nofollow, noarchive` na resposta HTTP. O `robots.txt` não bloqueia essa rota, para que robôs compatíveis possam ler a diretiva; a proteção real do painel continua sendo a autenticação e autorização.
+
+O email precisa permanecer em `ADMIN_ALLOWED_EMAIL` em toda autorização; a variável também controla o provisionamento da tabela de papéis. No PostgreSQL, triggers serializados recusam sobreposição entre pedidos ativos e bloqueios manuais, e os contadores globais de formulários também usam travas transacionais. A artista informou que aplicou a migration base ao projeto de desenvolvimento, mas a sessão não verificou o banco; considere essas regras ativas apenas depois de confirmar a aplicação no projeto correto. Aplique e confirme a migration base no projeto de produção antes de publicar.
 
 As fotos do portfólio ficam públicas quando publicadas. Não envie documentos pessoais nem fotos de clientes como referência neste fluxo; o formulário aceita apenas texto/link HTTPS para referências. A ferramenta de exclusão remove pedidos e solicitações associadas ao email e anonimiza o pedido LGPD que originou a ação; não elimina automaticamente dados que fornecedores externos conservem em backups próprios.
 
 ## Arquivos relevantes
 
-- `client/src/content/careGuide.ts`: transcrição do manual enviado, preservando texto e grafia original.
+- `client/src/content/careGuide.ts`: transcrição comparada com o PDF enviado; dois erros de digitação da transcrição foram corrigidos, sem adicionar recomendações ao conteúdo.
 - `supabase/migrations/20261104000000_create_sketchbook.sql`: schema, RLS, Storage e funções RPC.
 - `supabase/tests/rls.sql`: verificações de negação para sessões anon e autenticadas sem papel.
 - `server/_core/email.ts`: notificações Resend.
@@ -75,8 +79,8 @@ A copy pública de apresentação, navegação e estados vazios segue princípio
 
 O formulário **Esqueci minha senha** do próprio painel envia o callback `/atelier-7e4c19b2?recovery=1`, derivado da origem que está aberta no navegador. No Supabase, abra **Authentication > URL Configuration** e configure:
 
-- **Site URL**: `https://3000-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer` (somente a origem do Preview, sem `localhost` e sem a rota do painel).
-- **Redirect URLs**: `https://3000-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer/atelier-7e4c19b2?recovery=1`.
+- **Site URL**: `https://8328-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer` (origem do Preview do projeto, sem `localhost` e sem a rota do painel).
+- **Redirect URLs**: `https://8328-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer/atelier-7e4c19b2?recovery=1`.
 
 Salve, abra o painel pelo link do Preview deste projeto (não por `localhost`), solicite um **novo** email pelo formulário do painel e use esse email. Links enviados antes da correção podem continuar apontando para o destino antigo. Se o endereço do Preview mudar, atualize as duas entradas com a origem atual. Um envio manual pelo Dashboard do Supabase não passa pelo `redirectTo` deste formulário e pode usar apenas a `Site URL`. Quando o site for publicado, substitua a **Site URL** pela origem de produção e inclua também o callback de produção em **Redirect URLs**. Se você personalizou o template de email para montar o link diretamente, use `{{ .RedirectTo }}` como destino dinâmico, em vez de fixar `{{ .SiteURL }}`.
 

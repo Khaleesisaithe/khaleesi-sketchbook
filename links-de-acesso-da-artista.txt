@@ -1,10 +1,10 @@
 Khaleesi Saithe — Sketchbook de Tattoo
 
 ACESSO PÚBLICO (PREVIEW TEMPORÁRIO)
-https://3000-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer/
+https://8328-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer/
 
 ACESSO RESERVADO DA ARTISTA
-https://3000-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer/atelier-7e4c19b2
+https://8328-i9xjuwcxwqiddpq2fsr63-0aa4212d.us5.manus.computer/atelier-7e4c19b2
 
 O painel não aparece na navegação pública. O caminho discreto não substitui a autenticação: entre somente com a conta administrativa Supabase autorizada. Como o site publica um manifesto técnico de rotas, o caminho não deve ser tratado como segredo; a barreira de segurança é a autenticação/autorização. A senha não está salva neste arquivo.
 
@@ -15,3 +15,7 @@ PENDÊNCIA PARA HABILITAR OS NOVOS CAMPOS SOCIAIS
 Antes de salvar YouTube, portfólio externo e posts do Instagram no painel, execute a migração aditiva `supabase/migrations/20261106010000_extend_social_profile.sql` no SQL Editor do projeto Supabase. Ela adiciona colunas sem apagar os dados existentes.
 
 Os posts e boards externos só são incorporados após consentimento explícito da pessoa visitante. Os campos de perfil social continuam vazios até a artista informar os links reais.
+
+
+PENDÊNCIA PARA ATIVAR A PROTEÇÃO DE HORÁRIOS
+Antes de cadastrar horários semanais reais, execute no Supabase de desenvolvimento `supabase/migrations/20261106020000_guard_weekly_hours_overlap.sql`. A constraint impede sobreposição inclusive em gravações concorrentes; ela não apaga horários. Se avisar sobre intervalos já conflitantes, revise-os manualmente antes de tentar novamente.

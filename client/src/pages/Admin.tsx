@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { ArrowUpRight, LogOut, Mail, RefreshCw, Save, Trash2, Upload } from "lucide-react";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { clearPasswordRecoveryProof, getPasswordRecoveryProofRemainingMs, hasPasswordRecoveryProof, isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { trpc } from "@/lib/trpc";
 import { ARTIST_ROUTE } from "@/lib/privateRoute";
+import { isPasswordRecoveryEvent } from "@/lib/passwordRecovery";
 
 type Tab = "appointments" | "portfolio" | "flash" | "art" | "profile" | "hours" | "privacy" | "emails";
 type PortfolioItem = { id: string; title: string; description: string; category: string; image_path: string; image_alt: string; is_published: boolean; sort_order: number };
@@ -63,7 +64,8 @@ export default function Admin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [authView, setAuthView] = useState<"login" | "request" | "update">(() => new URLSearchParams(window.location.search).get("recovery") === "1" ? "update" : "login");
+  const [authView, setAuthView] = useState<"login" | "request" | "update">(() => hasPasswordRecoveryProof() ? "update" : "login");
+  const [recoveryVerified, setRecoveryVerified] = useState(() => hasPasswordRecoveryProof());
   const [authMessage, setAuthMessage] = useState("");
   const [authError, setAuthError] = useState("");
   const [recoveryBusy, setRecoveryBusy] = useState(false);
@@ -75,14 +77,42 @@ export default function Admin() {
 
   useEffect(() => {
     if (!supabase) { setAuthLoading(false); return; }
-    supabase.auth.getSession().then(({ data }) => { setSession(data.session); setAuthLoading(false); });
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      const verified = Boolean(data.session) && hasPasswordRecoveryProof();
+      if (verified) { setRecoveryVerified(true); setAuthView("update"); }
+      setAuthLoading(false);
+    });
     const { data } = supabase.auth.onAuthStateChange((event, next) => {
-      if (event === "PASSWORD_RECOVERY") { setAuthView("update"); setAuthMessage(""); setAuthError(""); }
+      if (event === "PASSWORD_RECOVERY") {
+        const recoveryQuery = new URLSearchParams(window.location.search).get("recovery");
+        const verified = isPasswordRecoveryEvent(event, Boolean(next), recoveryQuery) && hasPasswordRecoveryProof();
+        setRecoveryVerified(verified);
+        if (verified) { setAuthView("update"); setAuthMessage(""); setAuthError(""); }
+      }
+      if (event === "SIGNED_OUT") { clearPasswordRecoveryProof(); setRecoveryVerified(false); setAuthView("login"); }
       setSession(next);
       setAuthLoading(false);
     });
     return () => data.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!recoveryVerified) return;
+    const remaining = getPasswordRecoveryProofRemainingMs();
+    if (!remaining) {
+      clearPasswordRecoveryProof();
+      setRecoveryVerified(false);
+      setAuthError("O prazo do link de recuperação expirou. Solicite um novo email pelo painel.");
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      clearPasswordRecoveryProof();
+      setRecoveryVerified(false);
+      setAuthError("O prazo do link de recuperação expirou. Solicite um novo email pelo painel.");
+    }, remaining);
+    return () => window.clearTimeout(timer);
+  }, [recoveryVerified]);
 
   useEffect(() => {
     const existing = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
@@ -110,6 +140,8 @@ export default function Admin() {
     event.preventDefault();
     setAuthError(""); setAuthMessage("");
     if (!supabase) return;
+    clearPasswordRecoveryProof();
+    setRecoveryVerified(false);
     const address = email.trim();
     if (!address) { setAuthError("Informe o email da conta autorizada."); return; }
     setRecoveryBusy(true);
@@ -127,7 +159,12 @@ export default function Admin() {
   async function saveNewPassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setAuthError(""); setAuthMessage("");
-    if (!supabase || !session) { setAuthError("O link expirou. Solicite um novo email de recuperação."); return; }
+    if (!supabase || !session || !recoveryVerified || !hasPasswordRecoveryProof()) {
+      setAuthView("update");
+      setRecoveryVerified(false);
+      setAuthError("A sessão de recuperação não foi confirmada. Solicite um novo email pelo painel.");
+      return;
+    }
     if (newPassword.length < 12) { setAuthError("Use uma senha com pelo menos 12 caracteres."); return; }
     if (newPassword !== confirmNewPassword) { setAuthError("As senhas não correspondem."); return; }
     setRecoveryBusy(true);
@@ -135,14 +172,23 @@ export default function Admin() {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       await supabase.auth.signOut();
-      setSession(null); setAuthView("login"); setNewPassword(""); setConfirmNewPassword("");
+      clearPasswordRecoveryProof();
+      setSession(null); setRecoveryVerified(false); setAuthView("login"); setNewPassword(""); setConfirmNewPassword("");
       window.history.replaceState({}, document.title, window.location.pathname);
       setAuthMessage("Senha atualizada. Entre no painel com a nova senha.");
     } catch {
       setAuthError("Não foi possível atualizar a senha. O link pode ter expirado; solicite outro email de recuperação.");
     } finally { setRecoveryBusy(false); }
   }
-  async function signOut() { if (supabase) await supabase.auth.signOut(); setSession(null); setMessage(""); setErrorText(""); }
+  async function signOut() { if (supabase) await supabase.auth.signOut(); clearPasswordRecoveryProof(); setSession(null); setRecoveryVerified(false); setMessage(""); setErrorText(""); }
+  function requestAnotherRecovery() {
+    clearPasswordRecoveryProof();
+    setRecoveryVerified(false);
+    if (session?.user.email) setEmail(session.user.email);
+    setAuthView("request");
+    setAuthError("");
+    setAuthMessage("");
+  }
 
   return (
     <div className="admin-app">
@@ -154,17 +200,21 @@ export default function Admin() {
         <section className="container-wide admin-login"><p className="loading-mark">Verificando sessão…</p></section>
       ) : authView === "update" ? (
         <section className="container-wide admin-login paper-panel">
-          {session ? <><h2 className="form-panel-title">Definir nova senha</h2><p className="form-panel-copy">Escolha uma senha com pelo menos 12 caracteres.</p><form onSubmit={saveNewPassword}><div className="form-field"><label htmlFor="new-password">Nova senha</label><input id="new-password" type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} required minLength={12} maxLength={256} /></div><div className="form-field" style={{ marginTop: 14 }}><label htmlFor="confirm-new-password">Confirme a nova senha</label><input id="confirm-new-password" type="password" autoComplete="new-password" value={confirmNewPassword} onChange={(event) => setConfirmNewPassword(event.target.value)} required minLength={12} maxLength={256} /></div>{authError && <p className="form-error" role="alert">{authError}</p>}<button className="button-primary" style={{ marginTop: 18 }} type="submit" disabled={recoveryBusy}>{recoveryBusy ? "Salvando…" : "Salvar nova senha"}</button></form></> : <><h2 className="form-panel-title">Link expirado ou inválido</h2><p className="form-panel-copy">Peça um novo link de recuperação e abra-o no mesmo navegador.</p><button className="button-outline" onClick={() => { setAuthView("request"); setAuthError(""); setAuthMessage(""); }}>Solicitar outro link</button></>}
+          {session && recoveryVerified && hasPasswordRecoveryProof() ? <><h2 className="form-panel-title">Definir nova senha</h2><p className="form-panel-copy">Escolha uma senha com pelo menos 12 caracteres.</p><form onSubmit={saveNewPassword}><div className="form-field"><label htmlFor="new-password">Nova senha</label><input id="new-password" type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} required minLength={12} maxLength={256} /></div><div className="form-field" style={{ marginTop: 14 }}><label htmlFor="confirm-new-password">Confirme a nova senha</label><input id="confirm-new-password" type="password" autoComplete="new-password" value={confirmNewPassword} onChange={(event) => setConfirmNewPassword(event.target.value)} required minLength={12} maxLength={256} /></div>{authError && <p className="form-error" role="alert">{authError}</p>}<button className="button-primary" style={{ marginTop: 18 }} type="submit" disabled={recoveryBusy}>{recoveryBusy ? "Salvando…" : "Salvar nova senha"}</button></form></> : <><h2 className="form-panel-title">Link expirado ou inválido</h2><p className="form-panel-copy">A tela de nova senha só abre após o evento de recuperação do Supabase. Peça um novo link e abra-o no mesmo navegador.</p>{authError && <p className="form-error" role="alert">{authError}</p>}<button className="button-outline" onClick={requestAnotherRecovery}>Solicitar outro link</button></>}
+        </section>
+      ) : authView === "request" ? (
+        <section className="container-wide admin-login paper-panel">
+          <h2 className="form-panel-title">Recuperar acesso</h2><p className="form-panel-copy">Informe o email da conta autorizada. Se ele corresponder a uma conta, enviaremos um link para criar outra senha.</p><form onSubmit={requestPasswordRecovery}><div className="form-field"><label htmlFor="recovery-email">Email</label><input id="recovery-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} /></div>{authError && <p className="form-error" role="alert">{authError}</p>}{authMessage && <p className="status-message" role="status">{authMessage}</p>}<button className="button-primary" style={{ marginTop: 18 }} type="submit" disabled={recoveryBusy}>{recoveryBusy ? "Enviando…" : "Enviar link de recuperação"}</button></form><button className="button-quiet" style={{ marginTop: 12 }} type="button" onClick={() => { setAuthView("login"); setAuthError(""); setAuthMessage(""); }}>{session ? "Voltar ao painel" : "Voltar para entrar"}</button>
         </section>
       ) : !session ? (
         <section className="container-wide admin-login paper-panel">
-          {authView === "request" ? <><h2 className="form-panel-title">Recuperar acesso</h2><p className="form-panel-copy">Informe o email da conta autorizada. Se ele corresponder a uma conta, enviaremos um link para criar outra senha.</p><form onSubmit={requestPasswordRecovery}><div className="form-field"><label htmlFor="recovery-email">Email</label><input id="recovery-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} /></div>{authError && <p className="form-error" role="alert">{authError}</p>}{authMessage && <p className="status-message" role="status">{authMessage}</p>}<button className="button-primary" style={{ marginTop: 18 }} type="submit" disabled={recoveryBusy}>{recoveryBusy ? "Enviando…" : "Enviar link de recuperação"}</button></form><button className="button-quiet" style={{ marginTop: 12 }} type="button" onClick={() => { setAuthView("login"); setAuthError(""); setAuthMessage(""); }}>Voltar para entrar</button></> : <><h2 className="form-panel-title">Entrar no painel</h2><p className="form-panel-copy">Use a conta Supabase Auth previamente criada e verificada pela responsável.</p><form onSubmit={signIn}><div className="form-field"><label htmlFor="admin-email">Email</label><input id="admin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} /></div><div className="form-field" style={{ marginTop: 14 }}><label htmlFor="admin-password">Senha</label><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required maxLength={256} /></div>{loginError && <p className="form-error" role="alert">{loginError}</p>}{authMessage && <p className="status-message" role="status">{authMessage}</p>}<button className="button-primary" style={{ marginTop: 18 }} type="submit">Entrar <ArrowUpRight size={14} /></button></form><button className="button-quiet" style={{ marginTop: 12 }} type="button" onClick={() => { setAuthView("request"); setLoginError(""); setAuthError(""); setAuthMessage(""); }}>Esqueci minha senha</button></>}
+          <h2 className="form-panel-title">Entrar no painel</h2><p className="form-panel-copy">Use a conta Supabase Auth previamente criada e verificada pela responsável.</p><form onSubmit={signIn}><div className="form-field"><label htmlFor="admin-email">Email</label><input id="admin-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} /></div><div className="form-field" style={{ marginTop: 14 }}><label htmlFor="admin-password">Senha</label><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required maxLength={256} /></div>{loginError && <p className="form-error" role="alert">{loginError}</p>}{authMessage && <p className="status-message" role="status">{authMessage}</p>}<button className="button-primary" style={{ marginTop: 18 }} type="submit">Entrar <ArrowUpRight size={14} /></button></form><button className="button-quiet" style={{ marginTop: 12 }} type="button" onClick={() => { setAuthView("request"); setLoginError(""); setAuthError(""); setAuthMessage(""); }}>Esqueci minha senha</button>
         </section>
       ) : me.isLoading ? <section className="container-wide admin-login"><p className="loading-mark">Confirmando permissões…</p></section> : !me.data?.isAdmin ? (
         <section className="container-wide admin-login paper-panel"><h2 className="form-panel-title">Acesso não autorizado</h2><p className="form-panel-copy">Esta conta não está na lista administrativa. A autorização é controlada no servidor e no banco de dados.</p><button className="button-outline" onClick={signOut}>Sair</button></section>
       ) : (
         <section className="container-wide admin-wrap">
-          <div className="admin-topbar"><div><h2>Olá, Khaleesi.</h2><span className="form-help">Sessão verificada · {session.user.email}</span></div><button className="button-outline" onClick={signOut}><LogOut size={14} /> Sair</button></div>
+          <div className="admin-topbar"><div><h2>Olá, Khaleesi.</h2><span className="form-help">Sessão verificada · {session.user.email}</span></div><div className="admin-topbar-actions"><button className="button-outline" type="button" onClick={requestAnotherRecovery}><Mail size={14} /> Redefinir senha</button><button className="button-outline" type="button" onClick={signOut}><LogOut size={14} /> Sair</button></div></div>
           <nav className="admin-tabs" aria-label="Seções administrativas">{tabs.map((item) => <button key={item.id} className={`admin-tab ${tab === item.id ? "active" : ""}`} onClick={() => { setTab(item.id); setMessage(""); setErrorText(""); }} aria-pressed={tab === item.id}>{item.label}</button>)}</nav>
           {message && <p className="status-message" role="status">{message}</p>}{errorText && <p className="data-error" role="alert">{errorText}</p>}
           {tab === "appointments" && <AppointmentsPanel rows={appointmentQuery.data ?? []} loading={appointmentQuery.isLoading} error={appointmentQuery.error?.message ?? ""} onReload={() => appointmentQuery.refetch()} onUpdate={async (args) => { setMessage(""); setErrorText(""); try { await updateAppointment.mutateAsync(args); } catch { setErrorText("Não foi possível salvar esta mudança. O horário pode ter sido ocupado por outro pedido."); } }} />}
@@ -314,19 +364,19 @@ function ProfilePanel({ setMessage, setError }: { setMessage: (value: string) =>
     <form className="admin-card admin-stack" onSubmit={save}>
       <div><h3>Perfil e integrações públicas</h3><p className="form-help">Só serão mostrados os campos que você preencher. Não incluímos links, telefone ou local fictícios.</p></div>
       <div className="admin-form-grid">
-        <div className="form-field"><label>Nome artístico</label><input name="artist_name" defaultValue={profile.artist_name} required maxLength={120} /></div>
-        <div className="form-field"><label>Local de atendimento</label><input name="location" defaultValue={profile.location} maxLength={180} /></div>
-        <div className="form-field full"><label>Apresentação</label><textarea name="bio" defaultValue={profile.bio} maxLength={2000} /></div>
-        <div className="form-field"><label>Email público</label><input name="public_email" type="email" defaultValue={profile.public_email} maxLength={254} /></div>
-        <div className="form-field"><label>WhatsApp (DDD e país)</label><input name="whatsapp_number" type="tel" defaultValue={profile.whatsapp_number} maxLength={20} /></div>
-        <div className="form-field"><label>Perfil do Instagram (HTTPS)</label><input name="instagram_url" type="url" defaultValue={profile.instagram_url} /></div>
-        <div className="form-field"><label>Painel público Pinterest (HTTPS)</label><input name="pinterest_board_url" type="url" defaultValue={profile.pinterest_board_url} /></div>
-        <div className="form-field full"><label>URLs de posts/reels públicos do Instagram (uma por linha, até 12)</label><textarea name="instagram_post_urls" rows={5} defaultValue={(profile.instagram_post_urls ?? []).join("\n")} placeholder="https://www.instagram.com/p/…" /><small className="form-help">Sem scraping ou sincronização automática; cadastre links públicos escolhidos por você.</small></div>
-        <div className="form-field full"><label>Post em destaque (deve estar na lista acima)</label><input name="instagram_featured_post_url" type="url" defaultValue={profile.instagram_featured_post_url} /></div>
-        <div className="form-field"><label>Canal ou vídeo do YouTube (HTTPS)</label><input name="youtube_url" type="url" defaultValue={profile.youtube_url} placeholder="https://www.youtube.com/@…" /></div>
-        <div className="form-field"><label>Portfólio externo (HTTPS)</label><input name="external_portfolio_url" type="url" defaultValue={profile.external_portfolio_url} /></div>
-        <div className="form-field"><label>Fuso horário IANA</label><input name="timezone" defaultValue={profile.timezone} placeholder="Ex.: America/Sao_Paulo" /></div>
-        <div className="form-field"><label>Duração padrão (minutos)</label><select name="slot_duration_minutes" defaultValue={profile.slot_duration_minutes?.toString() ?? ""}><option value="">Selecione depois</option>{[30,45,60,90,120,180,240].map((value) => <option key={value} value={value}>{value} min</option>)}</select></div>
+        <div className="form-field"><label htmlFor="artist-name">Nome artístico</label><input id="artist-name" name="artist_name" defaultValue={profile.artist_name} required maxLength={120} /></div>
+        <div className="form-field"><label htmlFor="artist-location">Local de atendimento</label><input id="artist-location" name="location" defaultValue={profile.location} maxLength={180} /></div>
+        <div className="form-field full"><label htmlFor="artist-bio">Apresentação</label><textarea id="artist-bio" name="bio" defaultValue={profile.bio} maxLength={2000} /></div>
+        <div className="form-field"><label htmlFor="artist-email">Email público</label><input id="artist-email" name="public_email" type="email" defaultValue={profile.public_email} maxLength={254} /></div>
+        <div className="form-field"><label htmlFor="artist-whatsapp">WhatsApp (DDD e país)</label><input id="artist-whatsapp" name="whatsapp_number" type="tel" defaultValue={profile.whatsapp_number} maxLength={20} /></div>
+        <div className="form-field"><label htmlFor="artist-instagram">Perfil do Instagram (HTTPS)</label><input id="artist-instagram" name="instagram_url" type="url" defaultValue={profile.instagram_url} /></div>
+        <div className="form-field"><label htmlFor="artist-pinterest">Painel público Pinterest (HTTPS)</label><input id="artist-pinterest" name="pinterest_board_url" type="url" defaultValue={profile.pinterest_board_url} /></div>
+        <div className="form-field full"><label htmlFor="artist-instagram-posts">URLs de posts/reels públicos do Instagram (uma por linha, até 12)</label><textarea id="artist-instagram-posts" name="instagram_post_urls" rows={5} defaultValue={(profile.instagram_post_urls ?? []).join("\n")} placeholder="https://www.instagram.com/p/…" /><small className="form-help">Sem scraping ou sincronização automática; cadastre links públicos escolhidos por você.</small></div>
+        <div className="form-field full"><label htmlFor="artist-instagram-featured">Post em destaque (deve estar na lista acima)</label><input id="artist-instagram-featured" name="instagram_featured_post_url" type="url" defaultValue={profile.instagram_featured_post_url} /></div>
+        <div className="form-field"><label htmlFor="artist-youtube">Canal ou vídeo do YouTube (HTTPS)</label><input id="artist-youtube" name="youtube_url" type="url" defaultValue={profile.youtube_url} placeholder="https://www.youtube.com/@…" /></div>
+        <div className="form-field"><label htmlFor="artist-portfolio">Portfólio externo (HTTPS)</label><input id="artist-portfolio" name="external_portfolio_url" type="url" defaultValue={profile.external_portfolio_url} /></div>
+        <div className="form-field"><label htmlFor="artist-timezone">Fuso horário IANA</label><input id="artist-timezone" name="timezone" defaultValue={profile.timezone} placeholder="Ex.: America/Sao_Paulo" /></div>
+        <div className="form-field"><label htmlFor="artist-slot-duration">Duração padrão (minutos)</label><select id="artist-slot-duration" name="slot_duration_minutes" defaultValue={profile.slot_duration_minutes?.toString() ?? ""}><option value="">Selecione depois</option>{[30,45,60,90,120,180,240].map((value) => <option key={value} value={value}>{value} min</option>)}</select></div>
         <div className="form-field full"><label className="admin-check"><input name="is_public" type="checkbox" defaultChecked={profile.is_public} /> Publicar o perfil e habilitar consulta de horários</label></div>
         <div className="form-field full"><button className="button-primary" disabled={busy}>{busy ? "Salvando…" : <><Save size={14} /> Salvar perfil</>}</button></div>
       </div>
@@ -358,6 +408,12 @@ function SchedulePanel({ setMessage, setError }: { setMessage: (value: string) =
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     const value = { weekday: Number(form.get("weekday")), opens_at: String(form.get("opens_at")), closes_at: String(form.get("closes_at")), is_enabled: true };
+    const minutes = (time: string) => { const [hour, minute] = time.split(":").map(Number); return hour * 60 + minute; };
+    const opensAt = minutes(value.opens_at);
+    const closesAt = minutes(value.closes_at);
+    if (closesAt <= opensAt) { setError("O horário de fechamento precisa ser posterior à abertura."); return; }
+    const overlaps = hours.some((hour) => hour.weekday === value.weekday && hour.is_enabled && opensAt < minutes(hour.closes_at) && minutes(hour.opens_at) < closesAt);
+    if (overlaps) { setError("Este período se sobrepõe a outro horário já cadastrado para o mesmo dia."); return; }
     const { error } = await supabase.from("weekly_hours").insert(value);
     if (error) setError("Não foi possível adicionar. Confira o dia, os horários e eventuais duplicidades.");
     else { setMessage("Horário semanal adicionado."); formElement.reset(); await reload(); }
@@ -382,7 +438,7 @@ function SchedulePanel({ setMessage, setError }: { setMessage: (value: string) =
     const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) setError("Não foi possível remover."); else { setMessage("Regra removida."); await reload(); }
   }
-  return <div className="admin-stack"><div className="admin-topbar"><div><h2>Agenda e horários</h2><small className="form-help">Datas e horários avulsos usam o fuso do estúdio: {timezone || "defina no perfil"}.</small></div><button className="button-quiet" onClick={() => void reload()}><RefreshCw size={14} /> Atualizar</button></div>{loading ? <p className="loading-mark">Carregando disponibilidade…</p> : <><form className="admin-card" onSubmit={addHour}><h3>Horário semanal</h3><div className="admin-form-grid"><div className="form-field"><label>Dia</label><select name="weekday">{weekDays.map((day, index) => <option key={day} value={index}>{day}</option>)}</select></div><div className="form-field"><label>Abre ({timezone || "fuso do estúdio"})</label><input name="opens_at" type="time" required /></div><div className="form-field"><label>Fecha ({timezone || "fuso do estúdio"})</label><input name="closes_at" type="time" required /></div><div className="form-field" style={{ alignSelf: "end" }}><button className="button-primary">Adicionar horário</button></div></div><div className="admin-list" style={{ marginTop: 15 }}>{hours.map((hour) => <div className="admin-row" key={hour.id}><div><strong>{weekDays[hour.weekday]}</strong><small>{hour.opens_at.slice(0,5)}–{hour.closes_at.slice(0,5)}</small></div><button type="button" className="button-quiet" onClick={() => void remove("weekly_hours", hour.id)}><Trash2 size={13} /> Remover</button></div>)}</div></form><form className="admin-card" onSubmit={addBlock}><h3>Bloquear período</h3><div className="admin-form-grid"><div className="form-field"><label htmlFor="block-start">Início local ({timezone || "fuso do estúdio"})</label><input id="block-start" name="starts_at" type="datetime-local" required /></div><div className="form-field"><label htmlFor="block-end">Fim local ({timezone || "fuso do estúdio"})</label><input id="block-end" name="ends_at" type="datetime-local" required /></div><div className="form-field full"><label htmlFor="block-reason">Observação interna</label><input id="block-reason" name="reason" maxLength={250} /></div><div className="form-field full"><button className="button-outline">Bloquear período</button></div></div><div className="admin-list" style={{ marginTop: 15 }}>{blocks.map((block) => <div className="admin-row" key={block.id}><div><strong>{formatDate(block.starts_at, timezone || "UTC")} — {formatDate(block.ends_at, timezone || "UTC")}</strong><small>{block.reason || "Sem observação"}</small></div><button type="button" className="button-quiet" onClick={() => void remove("blocked_slots", block.id)}><Trash2 size={13} /> Remover</button></div>)}</div></form><p className="form-help">A agenda pública só exibe horários futuros quando o perfil estiver publicado, o fuso e a duração das sessões estiverem definidos.</p></>}</div>;
+  return <div className="admin-stack"><div className="admin-topbar"><div><h2>Agenda e horários</h2><small className="form-help">Datas e horários avulsos usam o fuso do estúdio: {timezone || "defina no perfil"}.</small></div><button className="button-quiet" onClick={() => void reload()}><RefreshCw size={14} /> Atualizar</button></div>{loading ? <p className="loading-mark">Carregando disponibilidade…</p> : <><form className="admin-card" onSubmit={addHour}><h3>Horário semanal</h3><div className="admin-form-grid"><div className="form-field"><label htmlFor="weekly-weekday">Dia</label><select id="weekly-weekday" name="weekday">{weekDays.map((day, index) => <option key={day} value={index}>{day}</option>)}</select></div><div className="form-field"><label htmlFor="weekly-opens">Abre ({timezone || "fuso do estúdio"})</label><input id="weekly-opens" name="opens_at" type="time" required /></div><div className="form-field"><label htmlFor="weekly-closes">Fecha ({timezone || "fuso do estúdio"})</label><input id="weekly-closes" name="closes_at" type="time" required /></div><div className="form-field" style={{ alignSelf: "end" }}><button className="button-primary">Adicionar horário</button></div></div><div className="admin-list" style={{ marginTop: 15 }}>{hours.map((hour) => <div className="admin-row" key={hour.id}><div><strong>{weekDays[hour.weekday]}</strong><small>{hour.opens_at.slice(0,5)}–{hour.closes_at.slice(0,5)}</small></div><button type="button" className="button-quiet" onClick={() => void remove("weekly_hours", hour.id)}><Trash2 size={13} /> Remover</button></div>)}</div></form><form className="admin-card" onSubmit={addBlock}><h3>Bloquear período</h3><div className="admin-form-grid"><div className="form-field"><label htmlFor="block-start">Início local ({timezone || "fuso do estúdio"})</label><input id="block-start" name="starts_at" type="datetime-local" required /></div><div className="form-field"><label htmlFor="block-end">Fim local ({timezone || "fuso do estúdio"})</label><input id="block-end" name="ends_at" type="datetime-local" required /></div><div className="form-field full"><label htmlFor="block-reason">Observação interna</label><input id="block-reason" name="reason" maxLength={250} /></div><div className="form-field full"><button className="button-outline">Bloquear período</button></div></div><div className="admin-list" style={{ marginTop: 15 }}>{blocks.map((block) => <div className="admin-row" key={block.id}><div><strong>{formatDate(block.starts_at, timezone || "UTC")} — {formatDate(block.ends_at, timezone || "UTC")}</strong><small>{block.reason || "Sem observação"}</small></div><button type="button" className="button-quiet" onClick={() => void remove("blocked_slots", block.id)}><Trash2 size={13} /> Remover</button></div>)}</div></form><p className="form-help">A agenda pública só exibe horários futuros quando o perfil estiver publicado, o fuso e a duração das sessões estiverem definidos.</p></>}</div>;
 }
 
 function PrivacyPanel({ setMessage, setError }: { setMessage: (value: string) => void; setError: (value: string) => void }) {

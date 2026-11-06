@@ -6,8 +6,10 @@ import { ArtistSocialLinks } from "@/components/ArtistSocialLinks";
 import { loadArtistProfile } from "@/lib/siteData";
 
 const navItems = [
-  { href: "/portfolio", label: "Portfólio" }, { href: "/flashes", label: "Flashes" },
-  { href: "/artes", label: "Artes" }, { href: "/inspiracoes", label: "Inspirações" },
+  { href: "/portfolio", label: "Portfólio" },
+  { href: "/flashes", label: "Flashes" },
+  { href: "/artes", label: "Artes" },
+  { href: "/inspiracoes", label: "Inspirações" },
   { href: "/cuidados", label: "Cuidados" },
 ];
 
@@ -26,6 +28,7 @@ export function SiteLayout({ children, pageLabel }: SiteLayoutProps) {
 
   return (
     <div className="site-shell">
+      <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
       <div className="topline"><span>Khaleesi Saithe</span><span>Sketchbook digital · tatuagem</span></div>
       <header className="site-header">
         <Link href="/" className="wordmark" aria-label="Khaleesi Saithe, início" onClick={() => setMenuOpen(false)}>
@@ -38,7 +41,7 @@ export function SiteLayout({ children, pageLabel }: SiteLayoutProps) {
         </nav>
       </header>
       {!home && <div className="page-ribbon"><span>{pageLabel ?? "Caderno aberto"}</span><span>KS · {String(navItems.findIndex((item) => item.href === location) + 1).padStart(2, "0")}</span></div>}
-      <main className="page-main">{children}</main>
+      <main id="main-content" className="page-main" tabIndex={-1}>{children}</main>
       <footer className="site-footer">
         <div className="footer-mark"><span className="footer-seal">KS</span><div><strong>Khaleesi Saithe</strong><small>Sketchbook de tatuagem</small></div></div>
         <p className="footer-note">Desenhos que começam no papel e continuam na pele.</p>

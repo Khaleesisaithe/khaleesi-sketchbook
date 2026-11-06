@@ -379,3 +379,25 @@ button:disabled, .button-primary:disabled { cursor: not-allowed; opacity: .56; t
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+
+/* Acesso por teclado: o link só entra na composição visual quando recebe foco. */
+.skip-link {
+  position: fixed;
+  z-index: 1000;
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  padding: 10px 16px;
+  color: var(--paper-bright);
+  background: var(--ink);
+  border: 2px solid var(--carmine);
+  font: 600 12px/1.4 "Cinzel", Georgia, serif;
+  letter-spacing: .06em;
+  transform: translateY(-180%);
+  transition: transform .16s ease;
+}
+.skip-link:focus { transform: translateY(0); }
+.page-main:focus-visible { outline: 2px solid var(--carmine); outline-offset: -5px; }
+
+.admin-topbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+@media(max-width:640px){.admin-topbar-actions{width:100%;justify-content:flex-start}.admin-topbar{align-items:flex-start;flex-wrap:wrap}}

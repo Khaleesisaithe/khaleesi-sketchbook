@@ -53,7 +53,8 @@ export const appRouter = router({
       ]);
       if (error || profileError) safeDatabaseFailure();
       const rows = (data ?? []) as Array<{ slot_start: string; slot_end: string }>;
-      return { timezone: profile?.timezone || null, slots: rows.map((row) => ({ start: row.slot_start, end: row.slot_end })) };
+      const uniqueRows = Array.from(new Map(rows.map((row) => [`${row.slot_start}|${row.slot_end}`, row])).values());
+      return { timezone: profile?.timezone || null, slots: uniqueRows.map((row) => ({ start: row.slot_start, end: row.slot_end })) };
     }),
     submit: publicProcedure.input(bookingInput).mutation(async ({ input }) => {
       configured();
