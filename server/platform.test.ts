@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { publicPlatformConfig, publicPlatformScript } from "./_core/publicConfig";
+import { publicPlatformConfig, publicPlatformScript, publicSiteConfig, publicSiteScript } from "./_core/publicConfig";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { sdk } from "./_core/sdk";
 import { listLLMModels } from "./_core/llm";
@@ -10,9 +10,14 @@ afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 describe("current platform integration", () => {
   it("exposes only named public runtime configuration", () => {
     const env = { MANUS_PROJECT_ID: "project-test", MANUS_API_KEY: "server-only-test", MANUS_JWT_SECRET: "signing-only-test", DATABASE_URL: "db-only-test", MANUS_API_BROWSER_KEY: "public-browser-test", MANUS_ANALYTICS_ENDPOINT: "https://analytics.example", MANUS_ANALYTICS_WEBSITE_ID: "site-test" };
-    expect(publicPlatformConfig(env)).toMatchObject({ projectId: "project-test", apiBrowserKey: "public-browser-test" });
+    expect(publicPlatformConfig(env)).toEqual({ projectId: "project-test" });
     const script = publicPlatformScript(env);
     for (const value of [env.MANUS_API_KEY, env.MANUS_JWT_SECRET, env.DATABASE_URL]) expect(script).not.toContain(value);
+    const siteEnv = { ...env, SUPABASE_URL: "https://project.supabase.co", SUPABASE_ANON_KEY: "public-anon-test", SUPABASE_SERVICE_ROLE_KEY: "server-only-supabase-test", RESEND_API_KEY: "server-only-resend-test", RESEND_FROM: "artist@example.test", BOOKING_NOTIFICATION_EMAIL: "artist@example.test" } as NodeJS.ProcessEnv;
+    expect(publicSiteConfig(siteEnv)).toEqual({ supabaseUrl: "https://project.supabase.co", supabaseAnonKey: "public-anon-test", emailConfigured: true });
+    const siteScript = publicSiteScript(siteEnv);
+    expect(siteScript).toContain("public-anon-test");
+    for (const value of ["server-only-supabase-test", "server-only-resend-test"]) expect(siteScript).not.toContain(value);
     const appended: unknown[] = [];
     const fakeDocument = { createElement: () => ({ setAttribute() {} }), head: { appendChild: (node: unknown) => appended.push(node) } };
     new Function("window", "document", script)({}, fakeDocument);

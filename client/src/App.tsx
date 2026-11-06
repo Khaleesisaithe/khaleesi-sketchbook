@@ -1,35 +1,61 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
+import { lazy, Suspense } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { ARTIST_ROUTE } from "./lib/privateRoute";
 import Home from "./pages/Home";
 
+const Portfolio = lazy(() => import("@/pages/Portfolio"));
+const Catalog = lazy(() => import("@/pages/Catalog"));
+const Inspirations = lazy(() => import("@/pages/Inspirations"));
+const Care = lazy(() => import("@/pages/Care"));
+const Booking = lazy(() => import("@/pages/Booking"));
+const Privacy = lazy(() => import("@/pages/Privacy"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+
 function Router() {
-  // make sure to consider if you need authentication for certain routes
+  const [location] = useLocation();
+  const reduceMotion = useReducedMotion();
+  const motionDuration = reduceMotion ? 0 : 0.34;
+
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        className="route-page-turn"
+        key={location}
+        initial={reduceMotion ? { opacity: 1 } : { opacity: 0, x: 12, rotateY: -2 }}
+        animate={{ opacity: 1, x: 0, rotateY: 0 }}
+        exit={reduceMotion ? { opacity: 1 } : { opacity: 0, x: -8, rotateY: 1.5 }}
+        transition={{ duration: motionDuration, ease: "easeInOut" }}
+      >
+        <Suspense fallback={<p className="loading-mark" role="status">Abrindo o caderno…</p>}>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/portfolio" component={Portfolio} />
+            <Route path="/flashes">{() => <Catalog kind="flash" />}</Route>
+            <Route path="/artes">{() => <Catalog kind="art" />}</Route>
+            <Route path="/inspiracoes" component={Inspirations} />
+            <Route path="/cuidados" component={Care} />
+            <Route path="/agendar" component={Booking} />
+            <Route path="/privacidade" component={Privacy} />
+            <Route path={ARTIST_ROUTE} component={Admin} />
+            <Route path="/404" component={NotFound} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
-function App() {
+export default function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />
@@ -38,5 +64,3 @@ function App() {
     </ErrorBoundary>
   );
 }
-
-export default App;
