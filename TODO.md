@@ -117,3 +117,14 @@
 - [ ] Aplicar a migração aditiva `supabase/migrations/20261106010000_extend_social_profile.sql` no projeto Supabase da aplicação antes de gravar os novos campos de YouTube, portfólio externo e posts do Instagram.
 - [ ] Aplicar `supabase/migrations/20261106020000_guard_weekly_hours_overlap.sql` no Supabase de desenvolvimento antes de cadastrar horários reais, para que a constraint do banco também bloqueie sobreposições concorrentes.
 - [ ] Depois de receber os endereços reais da artista, preencher e publicar os links, posts de Instagram e painel público do Pinterest; nenhum endereço de perfil ou publicação foi inventado.
+
+
+## 13. Fundo de arte sincronizado à rolagem
+- [x] A imagem WebP enviada pela artista aparece como primeiro quadro visível ao abrir uma página pública.
+- [x] A imagem e os quadros do MP4 enviado formam o fundo visual fixo, em tela cheia e atrás do conteúdo público; não são uma seção no topo ou rodapé.
+- [x] A rolagem vertical faz os quadros do vídeo avançarem e retrocederem gradualmente conforme o visitante se move; sem rolagem, o fundo permanece parado, sem reprodução automática.
+- [x] Preservar a proporção e a arte inteira em telas de diferentes formatos; preencher o espaço excedente de forma harmônica, sem esticar nem cortar o quadro principal.
+- [x] Manter o texto e os controles legíveis e acessíveis, conservar o painel administrativo com seu visual separado e respeitar `prefers-reduced-motion`.
+
+## 14. Armazenamento dos assets de fundo
+- [x] O WebP fornecido e a versão sem áudio do MP4 original ficam guardados no storage do projeto; as URLs servidas no Preview são válidas e podem ser usadas pelo fundo scroll-scrub.

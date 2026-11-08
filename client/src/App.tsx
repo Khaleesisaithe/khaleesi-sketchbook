@@ -7,6 +7,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ARTIST_ROUTE } from "./lib/privateRoute";
 import Home from "./pages/Home";
+import { ScrollScrubBackground } from "./components/ScrollScrubBackground";
 
 const Portfolio = lazy(() => import("@/pages/Portfolio"));
 const Catalog = lazy(() => import("@/pages/Catalog"));
@@ -21,8 +22,12 @@ function Router() {
   const [location] = useLocation();
   const reduceMotion = useReducedMotion();
   const motionDuration = reduceMotion ? 0 : 0.34;
+  const normalizedLocation = location.replace(/\/+$/, "") || "/";
+  const showScrollBackground = normalizedLocation !== ARTIST_ROUTE;
 
   return (
+    <>
+      {showScrollBackground && <ScrollScrubBackground />}
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         className="route-page-turn"
@@ -49,6 +54,7 @@ function Router() {
         </Suspense>
       </motion.div>
     </AnimatePresence>
+    </>
   );
 }
 

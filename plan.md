@@ -66,7 +66,7 @@ As migrações são aditivas; nenhum dado da base MySQL provisionada será alter
 
 ### Identidade visual e navegação
 
-A nova prancha enviada será referência de alto contraste, letras góticas ornamentadas pretas sobre cinza-claro e composição tipográfica. Como a instrução vigente continua sendo não criar imagens, a prancha e o QR code não serão usados como imagem de fundo; a linguagem será traduzida em fontes web, marcas tipográficas, padrões de letras e rabiscos somente em CSS. A interface pública ganhará contraste gótico em preto/cinza com vinho escuro como acento, texto um pouco maior e animações breves de ícones/cliques e virada de página, respeitando `prefers-reduced-motion`. O painel administrativo terá tipografia de interface diferente, maior legibilidade e estrutura profissional própria, sem herdar a navegação editorial pública.
+A prancha do alfabeto e seu QR continuam servindo apenas de referência tipográfica, sem serem reutilizados como imagem. A artista aprovou especificamente o WebP e o MP4 enviados em 2026-11-07 como artes de fundo; são os únicos assets de imagem/vídeo adicionados, sem gerar novas artes. A interface pública mantém o preto/cinza com vinho escuro como acento, texto legível e animações breves de ícones/cliques e virada de página, respeitando `prefers-reduced-motion`. O painel administrativo terá tipografia de interface diferente, maior legibilidade e estrutura profissional própria, sem herdar a navegação editorial pública.
 
 A rota administrativa é `/atelier-7e4c19b2`. Ela não tem link na navegação ou rodapé públicos, tem `noindex` e continua protegida por Supabase Auth e allowlist; a URL não é senha e o manifesto técnico obrigatório de rotas ainda pode revelá-la. O arquivo existente `links-de-acesso-da-artista.txt` contém o link do Preview público e o acesso da artista, informando que o domínio ainda não foi comprado e o site não está publicado. A confirmação da senha continuará sendo requisito para qualquer dado administrativo.
 
@@ -76,11 +76,17 @@ O perfil armazenará, além dos campos existentes, links de YouTube e de um port
 
 Posts do Instagram serão apresentados como incorporações públicas oficiais, carregadas somente após um clique do visitante. A lista curada de URLs públicas e a seleção de um post em destaque serão administradas no painel; isso não raspa o perfil nem promete sincronização automática de todos os posts. A sincronização automática via API da Meta é uma etapa separada, condicionada a conta Instagram profissional, app/token Meta e autorização da artista. A página Pinterest usará o board público informado pela artista e o widget oficial, também carregado sob ação do visitante. Endereços e nomes de conta reais ainda não foram fornecidos.
 
+### Fundo artístico sincronizado à rolagem
+
+O arquivo `/manus-storage/khaleesi-scroll-poster_0e2d640e.webp` é o primeiro quadro exibido na abertura. O vídeo `/manus-storage/khaleesi-scroll-scrub_e1623447.mp4` contém o WebP por 0,45 s antes dos 7,93 s de movimento original, em 24 fps, 720 × 1280, sem áudio e otimizado para aproximadamente 1,8 MB. Sua sequência contínua de zoom para o centro com leve rotação anti-horária é adequada para scrub. O progresso vertical da página controla a posição do vídeo, avançando ao rolar para baixo e retrocedendo ao rolar para cima; o vídeo fica pausado e não há autoplay.
+
+O fundo é `position: fixed` atrás de todas as páginas públicas, não um bloco no Hero, no cabeçalho ou no rodapé; não aparece no painel administrativo. O quadro principal usa `contain` para preservar toda a arte e sua proporção em telas largas, com preenchimento periférico difuso da mesma arte para cobrir o viewport sem distorção. Um véu de papel translúcido protege o contraste do conteúdo. Com `prefers-reduced-motion`, o vídeo não é carregado nem scrubbado e a imagem WebP permanece estática.
+
 A migration incremental `supabase/migrations/20261106010000_extend_social_profile.sql` adiciona ao perfil os campos `youtube_url`, `external_portfolio_url`, `instagram_post_urls` e `instagram_featured_post_url`, com restrições de URL, quantidade e destaque. Ela não cria uma tabela separada de posts nem novas políticas RLS. A artista ainda precisa confirmar a aplicação no projeto Supabase correto; não farei alterações diretas no banco compartilhado. A página e o painel podem ser concluídos antes de chegarem os links sociais, exibindo estados vazios claros.
 
 ### Estrutura de implementação adicional
 
-`client/src/lib/privateRoute.ts` centraliza a rota não comum; `client/src/App.tsx` aplica as transições da experiência pública e `client/src/components/SiteLayout.tsx` fornece o layout público. O painel administrativo usa sua estrutura e tipografia próprias em `client/src/pages/Admin.tsx`. A página de inspirações aciona os scripts oficiais apenas após consentimento. A migration social e os testes RLS ficam em `supabase/migrations/` e `supabase/tests/`.
+`client/src/lib/privateRoute.ts` centraliza a rota não comum; `client/src/App.tsx` aplica as transições da experiência pública e monta `client/src/components/ScrollScrubBackground.tsx` somente fora da rota administrativa. `client/src/components/SiteLayout.tsx` continua fornecendo o layout público; o painel usa sua estrutura e tipografia próprias em `client/src/pages/Admin.tsx`. A página de inspirações aciona os scripts oficiais apenas após consentimento. A migration social e os testes RLS ficam em `supabase/migrations/` e `supabase/tests/`.
 
 ### Limites documentados das plataformas
 

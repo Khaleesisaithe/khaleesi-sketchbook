@@ -401,3 +401,65 @@ button:disabled, .button-primary:disabled { cursor: not-allowed; opacity: .56; t
 
 .admin-topbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 @media(max-width:640px){.admin-topbar-actions{width:100%;justify-content:flex-start}.admin-topbar{align-items:flex-start;flex-wrap:wrap}}
+
+
+/* Fundo de arte pública: quadro inteiro no centro, preenchimento difuso nas laterais e papel translúcido para preservar contraste. */
+.scroll-scrub-background {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+  background: var(--paper);
+}
+.scroll-scrub-background__ambient,
+.scroll-scrub-background__poster,
+.scroll-scrub-background__video,
+.scroll-scrub-background__veil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.scroll-scrub-background__ambient { overflow: hidden; opacity: .62; }
+.scroll-scrub-background__ambient img,
+.scroll-scrub-background__ambient canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(12px) brightness(1.05) saturate(.78);
+  transform: scale(1.07);
+}
+.scroll-scrub-background__ambient-poster { opacity: 1; transition: opacity .12s linear; }
+.scroll-scrub-background__ambient-canvas { opacity: 0; transition: opacity .12s linear; }
+.scroll-scrub-background[data-scrubbing="true"][data-frame-ready="true"] .scroll-scrub-background__ambient-poster { opacity: 0; }
+.scroll-scrub-background[data-scrubbing="true"][data-frame-ready="true"] .scroll-scrub-background__ambient-canvas { opacity: 1; }
+.scroll-scrub-background__poster,
+.scroll-scrub-background__frame-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  opacity: .75;
+  filter: contrast(1.15) saturate(.85);
+}
+.scroll-scrub-background__poster { z-index: 1; transition: opacity .12s linear; }
+.scroll-scrub-background__frame-canvas { z-index: 2; opacity: 0; transition: opacity .12s linear; }
+.scroll-scrub-background__source-video { position: absolute; z-index: 4; right: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.scroll-scrub-background[data-scrubbing="true"][data-frame-ready="true"] .scroll-scrub-background__poster { opacity: 0; }
+.scroll-scrub-background[data-scrubbing="true"][data-frame-ready="true"] .scroll-scrub-background__frame-canvas { opacity: .75; }
+.scroll-scrub-background__veil {
+  z-index: 3;
+  background: radial-gradient(ellipse at center, rgba(238,232,223,.72), rgba(238,232,223,.76));
+}
+.route-page-turn { position: relative; z-index: 1; }
+@media (max-width: 760px) {
+  .scroll-scrub-background__ambient { opacity: .30; }
+  .scroll-scrub-background__ambient img,
+  .scroll-scrub-background__ambient canvas { filter: blur(8px) brightness(1.05) saturate(.78); }
+}
