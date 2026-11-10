@@ -120,11 +120,31 @@
 
 
 ## 13. Fundo de arte sincronizado à rolagem
-- [x] A imagem WebP enviada pela artista aparece como primeiro quadro visível ao abrir uma página pública.
-- [x] A imagem e os quadros do MP4 enviado formam o fundo visual fixo, em tela cheia e atrás do conteúdo público; não são uma seção no topo ou rodapé.
+- [x] A imagem WebP enviada pela artista aparece como primeiro quadro visível ao abrir uma página pública e cobre todo o viewport a 100% de opacidade.
+- [x] A imagem e os quadros do MP4 enviado formam um fundo fixo, de tela cheia e atrás do conteúdo público; não são uma seção no topo ou rodapé.
 - [x] A rolagem vertical faz os quadros do vídeo avançarem e retrocederem gradualmente conforme o visitante se move; sem rolagem, o fundo permanece parado, sem reprodução automática.
-- [x] Preservar a proporção e a arte inteira em telas de diferentes formatos; preencher o espaço excedente de forma harmônica, sem esticar nem cortar o quadro principal.
-- [x] Manter o texto e os controles legíveis e acessíveis, conservar o painel administrativo com seu visual separado e respeitar `prefers-reduced-motion`.
+- [x] Preencher o viewport em `cover`, preservando a proporção sem distorção e sem barras vazias; não aplicar transparência, véu, blur ou filtro que lave a arte.
+- [x] Não alterar o conteúdo existente; manter o painel administrativo separado e respeitar `prefers-reduced-motion` com o WebP estático.
 
 ## 14. Armazenamento dos assets de fundo
 - [x] O WebP fornecido e a versão sem áudio do MP4 original ficam guardados no storage do projeto; as URLs servidas no Preview são válidas e podem ser usadas pelo fundo scroll-scrub.
+
+
+## 15. Preparação do piloto para Vercel
+- [x] Criar o handler Express serverless reconhecido pela Vercel, sem `listen()` no entrypoint de função, e compartilhar o registro de rotas com o servidor local existente.
+- [x] Manter as APIs `/api/health`, `/api/site-config.js`, `/api/platform/config.js`, `/api/admin/upload` e `/api/trpc` no handler Express; não redirecionar APIs para o shell SPA. Remover do diretório estático gerado os scripts duplicados de `/api/site-config.js` e `/api/platform/config.js` para que essas configurações sejam sempre dinâmicas e `no-store`.
+- [x] Configurar o build Vite para gerar `public/index.html`, bundles estáticos e `404.html`; disponibilizar somente arquivos persistentes em `public/` pela Vercel e manter uploads duráveis no Supabase Storage. O painel aceita somente JPEG, PNG ou WebP até 4 MB, abaixo do limite de requisição da Function.
+- [x] Reescrever para `/index.html` as páginas públicas presentes em `client/public/manus-routes.json`, inclusive `/atelier-7e4c19b2`, sem reescrever assets, `/api/*` nem manifesto técnico.
+- [x] Manter `X-Robots-Tag: noindex, nofollow, noarchive` no acesso da artista e os cabeçalhos de segurança; não definir `X-Frame-Options` nem `frame-ancestors 'self'` que impeçam o Preview incorporado.
+- [x] Copiar os assets fornecidos pela artista para o repositório e trocar as referências `/manus-storage/` por paths relativos portáveis, mantendo o fundo WebP/MP4 full-screen, opacidade 100%, `cover`, scrub reversível pela rolagem, vídeo pausado e fallback `prefers-reduced-motion`.
+- [x] Manter a `SUPABASE_SERVICE_ROLE_KEY` exclusivamente no servidor: ela não aparece nos artefatos estáticos do build nem no código cliente; não registrar valores sensíveis em logs ou respostas públicas.
+- [ ] Após autorização específica, configurar `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e `ADMIN_ALLOWED_EMAIL` no ambiente Production do projeto Vercel; a service-role deve ser variável privada de servidor. Não inventar credenciais Resend; sem `RESEND_API_KEY`, `RESEND_FROM` e `BOOKING_NOTIFICATION_EMAIL`, notificações por email não estão ativas.
+- [ ] Confirmar no projeto Supabase escolhido para a publicação a migration base, `20261106010000_extend_social_profile.sql` e `20261106020000_guard_weekly_hours_overlap.sql`; não presumir que execução em desenvolvimento significa execução no banco de produção.
+- [ ] Preparar commit na branch `main` do repositório `KhaleesiSaithe/khaleesi-sketchbook` com a mensagem exata `Versão piloto`.
+
+## 16. Publicação e entrega dos links
+- [ ] Publicar a build autorizada na Vercel e confirmar sucesso real do deployment antes de informar uma URL.
+- [ ] Atualizar `links-de-acesso-da-artista.txt` com a URL publicada da página inicial e o endereço reservado `/atelier-7e4c19b2`, informando que o painel também exige login Supabase; não gravar senhas.
+- [ ] Atualizar no Supabase Auth a Site URL e a allowlist de redirects com a URL de produção da Vercel e o callback `/atelier-7e4c19b2?recovery=1`, ou deixar a instrução explícita se não houver autorização/conector para alterar o projeto Supabase.
+- [ ] Confirmar que a Home é pública, a rota administrativa continua autenticada/autorizada e não indexável, e que agendamentos gravam apenas no Supabase configurado.
+- [x] Não declarar email transacional funcional até o Resend e remetente estarem configurados e verificados; documentar que notificações por email seguem pendentes.

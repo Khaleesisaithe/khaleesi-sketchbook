@@ -1,27 +1,22 @@
 import { useEffect, useRef } from "react";
 import { useReducedMotion } from "framer-motion";
 
-const POSTER_URL = "/manus-storage/khaleesi-scroll-poster_0e2d640e.webp";
-const SCRUB_VIDEO_URL = "/manus-storage/khaleesi-scroll-scrub_e1623447.mp4";
+const POSTER_URL = "/images/khaleesi-scroll-poster.webp";
+const SCRUB_VIDEO_URL = "/images/khaleesi-scroll-scrub.mp4";
 const POSTER_HOLD_SECONDS = 0.45;
 const SEEK_THRESHOLD_SECONDS = 1 / 24;
-
-type FitMode = "contain" | "cover";
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function drawVideoToCanvas(video: HTMLVideoElement, canvas: HTMLCanvasElement, fit: FitMode) {
+function drawFullScreenFrame(video: HTMLVideoElement, canvas: HTMLCanvasElement) {
   if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !video.videoWidth || !video.videoHeight) return;
 
   const bounds = canvas.getBoundingClientRect();
   if (!bounds.width || !bounds.height) return;
 
-  // The blurred cover needs less resolution than the central, undistorted frame.
-  const pixelRatio = fit === "cover"
-    ? Math.min(window.devicePixelRatio || 1, 1)
-    : Math.min(window.devicePixelRatio || 1, 1.5);
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
   const width = Math.max(1, Math.round(bounds.width * pixelRatio));
   const height = Math.max(1, Math.round(bounds.height * pixelRatio));
   if (canvas.width !== width || canvas.height !== height) {
@@ -34,19 +29,16 @@ function drawVideoToCanvas(video: HTMLVideoElement, canvas: HTMLCanvasElement, f
   context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   context.clearRect(0, 0, bounds.width, bounds.height);
 
-  const scale = fit === "cover"
-    ? Math.max(bounds.width / video.videoWidth, bounds.height / video.videoHeight)
-    : Math.min(bounds.width / video.videoWidth, bounds.height / video.videoHeight);
+  const scale = Math.max(bounds.width / video.videoWidth, bounds.height / video.videoHeight);
   const drawWidth = video.videoWidth * scale;
   const drawHeight = video.videoHeight * scale;
   context.drawImage(video, (bounds.width - drawWidth) / 2, (bounds.height - drawHeight) / 2, drawWidth, drawHeight);
 }
 
-/** Public-site artwork background. One paused video source drives both the full-screen fill and the intact frame. */
+/** Full-bleed public-site artwork. The 24 fps video remains paused and follows page scroll. */
 export function ScrollScrubBackground() {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const ambientCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const frameCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const reduceMotion = useReducedMotion();
 
@@ -58,11 +50,9 @@ export function ScrollScrubBackground() {
     let animationFrame = 0;
 
     const drawCurrentFrame = () => {
-      const ambientCanvas = ambientCanvasRef.current;
-      const frameCanvas = frameCanvasRef.current;
-      if (!ambientCanvas || !frameCanvas) return;
-      drawVideoToCanvas(video, ambientCanvas, "cover");
-      drawVideoToCanvas(video, frameCanvas, "contain");
+      const canvas = frameCanvasRef.current;
+      if (!canvas) return;
+      drawFullScreenFrame(video, canvas);
       if (root.dataset.scrubbing === "true") root.dataset.frameReady = "true";
     };
 
@@ -113,6 +103,7 @@ export function ScrollScrubBackground() {
     video.addEventListener("loadeddata", queueFrameUpdate);
     video.addEventListener("seeked", handleSeeked);
     video.addEventListener("play", handlePlay);
+    queueFrameUpdate();
 
     return () => {
       window.removeEventListener("scroll", queueFrameUpdate);
@@ -128,10 +119,6 @@ export function ScrollScrubBackground() {
 
   return (
     <div ref={rootRef} className="scroll-scrub-background" data-scrubbing="false" data-frame-ready="false" aria-hidden="true">
-      <div className="scroll-scrub-background__ambient">
-        <img className="scroll-scrub-background__ambient-poster" src={POSTER_URL} alt="" draggable={false} />
-        {!reduceMotion && <canvas ref={ambientCanvasRef} className="scroll-scrub-background__ambient-canvas" />}
-      </div>
       <img className="scroll-scrub-background__poster" src={POSTER_URL} alt="" draggable={false} />
       {!reduceMotion && (
         <>
@@ -149,7 +136,6 @@ export function ScrollScrubBackground() {
           />
         </>
       )}
-      <div className="scroll-scrub-background__veil" />
     </div>
   );
 }

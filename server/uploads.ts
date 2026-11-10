@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { createServiceSupabaseClient, isSiteAdmin, verifySupabaseAccessToken } from "./_core/supabase";
 import { enforceRateLimit } from "./_core/rateLimit";
 
-const imageUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024, files: 1, fields: 0 } });
+const imageUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024, files: 1, fields: 0 } });
 const extByMime: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
 function getBearer(req: Request): string | null {

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm run build:vercel",
+  "rewrites": [
+    { "source": "/portfolio", "destination": "/index.html" },
+    { "source": "/flashes", "destination": "/index.html" },
+    { "source": "/artes", "destination": "/index.html" },
+    { "source": "/inspiracoes", "destination": "/index.html" },
+    { "source": "/cuidados", "destination": "/index.html" },
+    { "source": "/agendar", "destination": "/index.html" },
+    { "source": "/privacidade", "destination": "/index.html" },
+    { "source": "/atelier-7e4c19b2", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/atelier-7e4c19b2",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "same-site" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; base-uri 'self'; form-action 'self'; script-src 'self' https://www.instagram.com https://assets.pinterest.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.supabase.co https://*.cdninstagram.com https://i.pinimg.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.instagram.com https://assets.pinterest.com https://www.pinterest.com https://www.pinterest.ca; frame-src 'self' https://www.instagram.com https://assets.pinterest.com https://www.pinterest.com https://www.pinterest.ca; object-src 'none'; upgrade-insecure-requests" }
+      ]
+    }
+  ]
+}
