@@ -1,15 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm run build:vercel",
+  "outputDirectory": "dist/public",
   "rewrites": [
-    { "source": "/portfolio", "destination": "/index.html" },
-    { "source": "/flashes", "destination": "/index.html" },
-    { "source": "/artes", "destination": "/index.html" },
-    { "source": "/inspiracoes", "destination": "/index.html" },
-    { "source": "/cuidados", "destination": "/index.html" },
-    { "source": "/agendar", "destination": "/index.html" },
-    { "source": "/privacidade", "destination": "/index.html" },
-    { "source": "/atelier-7e4c19b2", "destination": "/index.html" }
+    { "source": "/atelier-7e4c19b2", "destination": "/atelier-7e4c19b2" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
@@ -29,4 +24,6 @@
       ]
     }
   ]
-}
+}git add vercel.json
+git commit -m "Adiciona outputDirectory correto no vercel.json para dist/public"
+git push origin main
